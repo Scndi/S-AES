@@ -12,8 +12,8 @@ public class Test01_Panel extends JPanel {
     JLabel output_label = new JLabel("加密/解密结果：");
 
     // 文本框用于用户输入
-    JTextField input1_field = new JTextField(16);
-    JTextField input2_field = new JTextField(16);
+    JTextField input1_field = new JTextField();
+    JTextField input2_field = new JTextField();
     JTextArea output_area = new JTextArea();
     JScrollPane output = new JScrollPane(output_area);
 
@@ -23,19 +23,20 @@ public class Test01_Panel extends JPanel {
     Test01_Panel() {
         // 设置布局为null，使用绝对定位
         this.setLayout(null);
+        this.setPreferredSize(new Dimension(650, 650));
 
         // 设置组件的位置和大小
         input1_label.setBounds(20, 20, 200, 25);
-        input1_field.setBounds(220, 20, 150, 25);
+        input1_field.setBounds(220, 20, 400, 25);
 
         input2_label.setBounds(20, 60, 200, 25);
-        input2_field.setBounds(220, 60, 150, 25);
+        input2_field.setBounds(220, 60, 400, 25);
 
         encrypt_button.setBounds(100, 100, 100, 30);
         decrypt_button.setBounds(250, 100, 100, 30);
 
         output_label.setBounds(20, 150, 200, 25);
-        output.setBounds(20, 200, 400, 100);
+        output.setBounds(20, 200, 600, 300);
         output_area.setEditable(false); // 设置为不可编辑
 
         // 添加组件到面板
@@ -54,8 +55,8 @@ public class Test01_Panel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String plaintext = input1_field.getText();
                 String key = input2_field.getText();
-                String result = encrypt(plaintext, key); // 调用加密函数
-                output_area.append(result+"\n"); // 显示结果
+                String result = s_encrypt(plaintext, key); // 调用加密函数
+                output_area.append(result + "\n"); // 显示结果
             }
         });
 
@@ -64,8 +65,8 @@ public class Test01_Panel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String ciphertext = input1_field.getText();
                 String key = input2_field.getText();
-                String result = decrypt(ciphertext, key); // 调用解密函数
-                output_area.append(result+"\n"); // 显示结果
+                String result = s_decrypt(ciphertext, key); // 调用解密函数
+                output_area.append(result + "\n"); // 显示结果
             }
         });
 
@@ -73,14 +74,15 @@ public class Test01_Panel extends JPanel {
         this.setVisible(true);
     }
 
-    // 假设这些函数是已实现的
-    private String encrypt(String plaintext, String key) {
-        // 你的加密逻辑
-        return "加密结果:"; // 示例返回值
+    private String s_encrypt(String plaintext, String key) {
+        // 这里添加你的加密逻辑
+        return "加密结果: " + plaintext + ", 使用密钥 " + key;
     }
 
-    private String decrypt(String ciphertext, String key) {
-        // 你的解密逻辑
-        return "解密结果:"; // 示例返回值
+    private String s_decrypt(String ciphertext, String key) {
+        // 这里添加你的解密逻辑
+        return "解密结果: " + ciphertext + ", 使用密钥 " + key;
     }
+
+
 }
