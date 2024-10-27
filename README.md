@@ -58,6 +58,8 @@
   *加密后极大可能出现乱码*
 
 拓展输入输出测试结果如图:  
+![](screenshots/img3.1.png)  
+![](screenshots/img3.2.png)  
 
 
 #### 关卡四.多重加密
