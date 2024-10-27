@@ -1,75 +1,107 @@
 package demo.S_AES;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import static demo.S_AES.S_AES.toBinary;
+import static demo.S_AES.S_AES.*;
 
 public class 扩展 {
-    public static String encryptString(String plaintext, int[] key) {
-        // 如果字符个数是奇数，则在末尾补一个空格
-        if (plaintext.length() % 2 != 0) {
-            plaintext += " ";
+    public static String encryptString(String input, int[] key) {
+        // 如果输入字符串长度是奇数，添加一个空格
+        if (input.length() % 2 != 0) {
+            input += " ";
         }
 
-        byte[] textBytes = plaintext.getBytes(StandardCharsets.US_ASCII);
-        StringBuilder encryptedText = new StringBuilder();
+        StringBuilder encrypted = new StringBuilder();
 
-        for (int i = 0; i < textBytes.length; i += 2) {
-            int[] plaintextBlock = byteTo16BitArray(textBytes, i);
-            int[] encryptedBlock = S_AES.encrypt(plaintextBlock, key); // 调用静态方法
-            encryptedText.append(intArrayToASCII(encryptedBlock));
-        }
-        return encryptedText.toString();
-    }
+        // 遍历每两个字符
+        for (int i = 0; i < input.length(); i += 2) {
+            // 获取两个字符
+            char ch1 = input.charAt(i);
+            char ch2 = input.charAt(i + 1);
 
-    public static String decryptString(String encryptedText, int[] key) {
-        byte[] textBytes = encryptedText.getBytes(StandardCharsets.US_ASCII);
-        StringBuilder plainText = new StringBuilder();
+            // 将两个字符转换为16位的int数组（0和1）
+            int[] temp1 = charToIntArray(ch1);
+            int[] temp2 = charToIntArray(ch2);
 
-        for (int i = 0; i < textBytes.length; i += 2) {
-            int[] encryptedBlock = new int[16];
-            if (i + 1 < textBytes.length) {
-                int firstByte = textBytes[i] & 0xFF;
-                int secondByte = textBytes[i + 1] & 0xFF;
-                System.arraycopy(toBinary(firstByte), 0, encryptedBlock, 0, 8);
-                System.arraycopy(toBinary(secondByte), 0, encryptedBlock, 8, 8);
-            } else {
-                // 处理单个字节的情况
-                int lastByte = textBytes[i] & 0xFF;
-                System.arraycopy(toBinary(lastByte), 0, encryptedBlock, 0, 8);
-                // 填充剩余的位
-                for (int j = 8; j < 16; j++) {
-                    encryptedBlock[j] = 0; // 填充为0或适当的填充值
-                }
+            int [] plaintext = new int [16];
+            for (int j = 0; j < temp1.length; j++) {
+                plaintext[j] = temp1[j];
+                plaintext[j + 8] = temp2[j];
             }
+            // 加密
+            int[] ciphertext = encrypt(plaintext, key);
 
-            int[] plaintextBlock = S_AES.decrypt(encryptedBlock, key); // 调用静态方法
-            plainText.append(intArrayToASCII(plaintextBlock));
+            temp1 = Arrays.copyOfRange(ciphertext, 0,8);
+            temp2 = Arrays.copyOfRange(ciphertext,8,16);
+            // 将加密结果转换为字符并追加到结果中
+            ch1 = intArrayToChar(temp1);
+            encrypted.append(ch1);
+            ch2 = intArrayToChar(temp2);
+            encrypted.append(ch2);
         }
-        return plainText.toString().trim(); // 去掉末尾的空格
+
+        return encrypted.toString();
+    }
+
+    public static String decryptString(String input, int[] key) {
+        StringBuilder decrypted = new StringBuilder();
+
+        // 遍历每两个字符
+        for (int i = 0; i < input.length(); i += 2) {
+            // 获取两个字符
+            char ch1 = input.charAt(i);
+            char ch2 = input.charAt(i + 1);
+
+            // 将两个字符转换为16位的int数组（0和1）
+            int[] temp1 = charToIntArray(ch1);
+            int[] temp2 = charToIntArray(ch2);
+
+            int [] ciphertext = new int[16];
+            for (int j = 0; j < temp1.length; j++) {
+                ciphertext[j] = temp1[j];
+                ciphertext[j + 8] = temp2[j];
+            }
+            // 解密
+            int[] plaintext = decrypt(ciphertext, key);
+
+            temp1 = Arrays.copyOfRange(plaintext, 0,8);
+            temp2 = Arrays.copyOfRange(plaintext,8,16);
+
+            // 将解密后的结果转换为字符并追加到结果中
+            ch1 = intArrayToChar(temp1);
+            decrypted.append(ch1);
+            ch2 = intArrayToChar(temp2);
+            decrypted.append(ch2);
+        }
+
+        return decrypted.toString().trim(); // 去除可能的空格
     }
 
 
-    private static int[] byteTo16BitArray(byte[] bytes, int index) {
-        int[] result = new int[16];
-        if (index < bytes.length) {
-            int[] firstBinary = toBinary(bytes[index] & 0xFF);
-            int[] secondBinary = (index + 1 < bytes.length) ? toBinary(bytes[index + 1] & 0xFF) : new int[8];
-            System.arraycopy(firstBinary, 0, result, 0, 8);
-            System.arraycopy(secondBinary, 0, result, 8, 8);
+    public static int[] charToIntArray(char ch) {
+        int[] result = new int[8];
+
+        // 将ASCII值转换为8位二进制表示
+        for (int i = 0; i < 8; i++) {
+            result[i] = ((int) ch >> (7 - i)) & 1; // 高位在前
         }
+
         return result;
     }
+    public static char intArrayToChar(int[] bits) {
+        int asciiValue = 0;
 
-    private static String intArrayToASCII(int[] bits) {
-        int firstByte = 0, secondByte = 0;
+        // 将int[8]的二进制位转换为ASCII值
         for (int i = 0; i < 8; i++) {
-            firstByte = (firstByte << 1) | bits[i];
-            secondByte = (secondByte << 1) | bits[i + 8];
+            asciiValue += bits[i] * (1 << (7 - i)); // 将每一位放到正确的位置
         }
-        // 返回 ASCII 字符串
-        return new String(new byte[]{(byte) firstByte, (byte) secondByte}, StandardCharsets.US_ASCII);
+
+        return (char) asciiValue; // 将ASCII值转换为字符
     }
+
+
+
 
     public static void main(String[] args) {
         // 测试用例
